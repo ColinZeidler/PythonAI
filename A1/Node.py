@@ -6,4 +6,4 @@ class Node(object):
         self.state = state
 
     def getchildren(self):
-        return [Node(self, x) for x in self.state.buildstates]
+        return [Node(self, x) for x in self.state.buildstates()]
