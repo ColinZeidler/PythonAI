@@ -39,4 +39,21 @@ class DepthFirstSearch(Search):
 
 
 if __name__ == "__main__":
-    pass
+    start = BridgeState([{1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 't': 0}, {}])
+    end = BridgeState([{}, {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 't': 0}])
+
+    # This is slow, but gets answer with fewest moves
+    bfs = BreadthFirstSearch(start, end)
+    node = bfs.runsearch()
+    while node.parent is not None:
+        print(node.state)
+        node = node.parent
+    print(node.state)
+
+    # This is fast, but answer may not be fewest moves
+    dfs = DepthFirstSearch(start, end)
+    node = dfs.runsearch()
+    while node.parent is not None:
+        print(node.state)
+        node = node.parent
+    print(node.state)
