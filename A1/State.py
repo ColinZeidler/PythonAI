@@ -3,10 +3,10 @@ from copy import deepcopy
 
 
 class State(object):
-    def __init__(self, state):
-        self.state = state
+    def __init__(self, my_state):
+        self.state = my_state
 
-    def buildstates(self):
+    def build_states(self):
         pass
 
     def __eq__(self, other):
@@ -19,7 +19,7 @@ class State(object):
 class BridgeState(State):
     """State is an array of 2 dicts that match person ids to crossing times, 't' is the torch and has a time of 0
     """
-    def buildstates(self):
+    def build_states(self):
         """Return array of all possible children states"""
         new_states = []
         if 't' in self.state[0]:
@@ -53,6 +53,43 @@ class BridgeState(State):
 
 
 class TileState(State):
-    def buildstates(self):
+    def build_states(self):
         """Return array of all possible children states"""
-        pass
+        new_states = []
+        blank_x = 0
+        blank_y = 0
+        my_max = 2
+        my_min = 0
+        for x in range(len(self.state)):
+            for y in range(len(self.state[x])):
+                if self.state[x][y] == " ":
+                    blank_x = x
+                    blank_y = y
+
+        for x in range(blank_x-1, blank_x + 2):
+            for y in range(blank_y-1, blank_y + 2):
+                if my_min <= x <= my_max and my_min <= y <= my_max:
+                    if (x, y) != (blank_x, blank_y):
+                        temp = deepcopy(self.state)
+                        temp[blank_x][blank_y] = temp[x][y]
+                        temp[x][y] = " "
+                        new_states.append(TileState(temp))
+
+        return new_states
+
+    def __str__(self):
+        new_string = "----"
+        for row in self.state:
+            new_string += "\n" + str(row)
+        return new_string
+
+
+if __name__ == "__main__":
+    state = [[8, " ", 1], [4, 6, 2], [7, 5, 3]]
+    t = TileState(state)
+    print("old")
+    print(t)
+    results = t.build_states()
+    print("new")
+    for s in results:
+        print(s)

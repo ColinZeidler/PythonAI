@@ -38,7 +38,8 @@ class DepthFirstSearch(Search):
         return self.nodes.pop(-1)
 
 
-if __name__ == "__main__":
+def bridge_search():
+    pass
     start = BridgeState([{1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 't': 0}, {}])
     end = BridgeState([{}, {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 't': 0}])
 
@@ -57,3 +58,11 @@ if __name__ == "__main__":
         print(node.state)
         node = node.parent
     print(node.state)
+
+
+def tile_search():
+    pass
+
+
+if __name__ == "__main__":
+    pass
