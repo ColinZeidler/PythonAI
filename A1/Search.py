@@ -4,7 +4,7 @@ from A1.State import BridgeState, TileState
 
 class Search(object):
     def __init__(self, startstate, targetstate):
-        self.visited = []
+        self.visited = set()
         self.nodes = [Node(None, startstate)]
         self.targetstate = targetstate
 
@@ -19,10 +19,10 @@ class Search(object):
     def runsearch(self):
         currentnode = self.next()
         while currentnode.state != self.targetstate:
-            self.visited.append(currentnode.state)
+            self.visited.add(currentnode.state)
             self.addnodes(currentnode.getchildren())
             currentnode = self.next()
-
+        print("Visited {}, unvisited {}".format(len(self.visited), len(self.nodes)))
         return currentnode
 
 
@@ -40,29 +40,77 @@ class DepthFirstSearch(Search):
 
 def bridge_search():
     pass
-    start = BridgeState([{1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 't': 0}, {}])
-    end = BridgeState([{}, {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 't': 0}])
+    start = BridgeState([{'1': 1, '2': 2, '3': 3, '4': 4, '5': 5, 't': 0}, {}])
+    end = BridgeState([{}, {'1': 1, '2': 2, '3': 3, '4': 4, '5': 5, 't': 0}])
 
     # This is slow, but gets answer with fewest moves
     bfs = BreadthFirstSearch(start, end)
     node = bfs.runsearch()
+    bfs_list = []
     while node.parent is not None:
-        print(node.state)
+        bfs_list.append(node.state)
         node = node.parent
-    print(node.state)
+    bfs_list.append(node.state)
+    bfs_list.reverse()
+    print("BFS SEARCH")
+    for i in bfs_list:
+        print(i)
 
     # This is fast, but answer may not be fewest moves
     dfs = DepthFirstSearch(start, end)
     node = dfs.runsearch()
+    dfs_list = []
     while node.parent is not None:
-        print(node.state)
+        dfs_list.append(node.state)
         node = node.parent
-    print(node.state)
+    dfs_list.append(node.state)
+    dfs_list.reverse()
+    print("DFS SEARCH:")
+    for i in dfs_list:
+        print(i)
 
 
 def tile_search():
-    pass
+    # get filename to read
+    fname = input("file> ")
+    with open(fname, 'r') as f:
+        # get rows
+        rows = int(f.readline())
+        # read csv for start
+        start = []
+        for x in range(rows):
+            start.append(f.readline().strip().split(','))
+        print("Start: {}".format(start))
+        end = []
+        for x in range(rows):
+            end.append(f.readline().strip().split(','))
+        print("End: {}".format(end))
+        # read csv for end
+    dfs = DepthFirstSearch(TileState(start), TileState(end))
+    node = dfs.runsearch()
+    l = []
+    while node.parent is not None:
+        l.append(node.state)
+        node = node.parent
+    l.append(node.state)
+    l.reverse()
+    print("DFS SEARCH:")
+    for i in l:
+        print(i)
+
+    bfs = BreadthFirstSearch(TileState(start), TileState(end))
+    node = bfs.runsearch()
+    l = []
+    while node.parent is not None:
+        l.append(node.state)
+        node = node.parent
+    l.append(node.state)
+    l.reverse()
+    print("BFS SEARCH:")
+    for i in l:
+        print(i)
 
 
 if __name__ == "__main__":
-    pass
+    bridge_search()
+    # tile_search()

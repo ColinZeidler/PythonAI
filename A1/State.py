@@ -12,6 +12,12 @@ class State(object):
     def __eq__(self, other):
         return self.state == other.state
 
+    def __hash__(self):
+        if type(self) is BridgeState:
+            return hash(repr([sorted(self.state[0]), sorted(self.state[1])]))
+        else:
+            return hash(repr(self.state))
+
     def __str__(self):
         return self.state
 
@@ -55,25 +61,28 @@ class BridgeState(State):
 class TileState(State):
     def build_states(self):
         """Return array of all possible children states"""
+        BLANK = ''
         new_states = []
         blank_x = 0
         blank_y = 0
-        my_max = 2
+        max_x = len(self.state)-1
+        max_y = len(self.state[0])-1
         my_min = 0
         for x in range(len(self.state)):
             for y in range(len(self.state[x])):
-                if self.state[x][y] == " ":
+                if self.state[x][y] == BLANK:
                     blank_x = x
                     blank_y = y
 
         for x in range(blank_x-1, blank_x + 2):
             for y in range(blank_y-1, blank_y + 2):
-                if my_min <= x <= my_max and my_min <= y <= my_max:
+                if my_min <= x <= max_x and my_min <= y <= max_y:
                     if (x, y) != (blank_x, blank_y):
                         temp = deepcopy(self.state)
                         temp[blank_x][blank_y] = temp[x][y]
-                        temp[x][y] = " "
+                        temp[x][y] = BLANK
                         new_states.append(TileState(temp))
+        # TODO chess knight move
 
         return new_states
 
@@ -85,7 +94,7 @@ class TileState(State):
 
 
 if __name__ == "__main__":
-    state = [[8, " ", 1], [4, 6, 2], [7, 5, 3]]
+    state = [[8, '', 1], [4, 6, 2], [7, 5, 3]]
     t = TileState(state)
     print("old")
     print(t)
