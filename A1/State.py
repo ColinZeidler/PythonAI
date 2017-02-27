@@ -73,6 +73,28 @@ class TileState(State):
                 if self.state[x][y] == BLANK:
                     blank_x = x
                     blank_y = y
+                else: # start of chess knight moves
+                    for xmove in [2, -2]:
+                        for ymove in [1, -1]:
+                            x2 = x + xmove
+                            y2 = y + ymove
+                            if my_min <= x2 <= max_x and my_min <= y2 <= max_y:
+                                if self.state[x2][y2] != BLANK:
+                                    temp = deepcopy(self.state)
+                                    temp[x][y] = self.state[x2][y2]
+                                    temp[x2][y2] = self.state[x][y]
+                                    new_states.append(TileState(temp))
+                    for xmove in [1, -1]:
+                        for ymove in [2, -2]:
+                            x2 = x + xmove
+                            y2 = y + ymove
+                            if my_min <= x2 <= max_x and my_min <= y2 <= max_y:
+                                if self.state[x2][y2] != BLANK:
+                                    temp = deepcopy(self.state)
+                                    temp[x][y] = self.state[x2][y2]
+                                    temp[x2][y2] = self.state[x][y]
+                                    new_states.append(TileState(temp))
+                    # end of chess knight moves
 
         for x in range(blank_x-1, blank_x + 2):
             for y in range(blank_y-1, blank_y + 2):
@@ -82,7 +104,6 @@ class TileState(State):
                         temp[blank_x][blank_y] = temp[x][y]
                         temp[x][y] = BLANK
                         new_states.append(TileState(temp))
-        # TODO chess knight move
 
         return new_states
 

@@ -1,11 +1,12 @@
 from A1.Node import Node
 from A1.State import BridgeState, TileState
+from collections import deque
 
 
 class Search(object):
     def __init__(self, startstate, targetstate):
         self.visited = set()
-        self.nodes = [Node(None, startstate)]
+        self.nodes = deque([Node(None, startstate)])
         self.targetstate = targetstate
 
     def addnodes(self, newnodes):
@@ -29,13 +30,13 @@ class Search(object):
 class BreadthFirstSearch(Search):
     def next(self):
         """Return next item in BFS order"""
-        return self.nodes.pop(0)
+        return self.nodes.popleft()
 
 
 class DepthFirstSearch(Search):
     def next(self):
         """Return next item in DFS order"""
-        return self.nodes.pop(-1)
+        return self.nodes.pop()
 
 
 def bridge_search():
@@ -97,7 +98,9 @@ def tile_search():
     print("DFS SEARCH:")
     for i in l:
         print(i)
+    del dfs
 
+    # runs out of memory
     bfs = BreadthFirstSearch(TileState(start), TileState(end))
     node = bfs.runsearch()
     l = []
@@ -112,5 +115,5 @@ def tile_search():
 
 
 if __name__ == "__main__":
-    bridge_search()
-    # tile_search()
+    # bridge_search()
+    tile_search()
