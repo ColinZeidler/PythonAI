@@ -39,6 +39,19 @@ class DepthFirstSearch(Search):
         return self.nodes.pop()
 
 
+class AStarSearch(Search):
+    def __init__(self, startstate, endstate, heuristic_func):
+        Search.__init__(startstate, endstate)
+        self.h_func = heuristic_func
+
+    def addnodes(self, newnodes):
+        Search.addnodes(self, newnodes)
+        self.nodes = sorted(self.nodes, key=lambda x: x.cost + x.heuristic)
+
+    def next(self):
+        self.nodes.popleft()
+
+
 def bridge_search():
     pass
     start = BridgeState([{'1': 1, '2': 2, '3': 3, '4': 4, '5': 5, 't': 0}, {}])
@@ -115,5 +128,5 @@ def tile_search():
 
 
 if __name__ == "__main__":
-    # bridge_search()
-    tile_search()
+    bridge_search()
+    # tile_search()
