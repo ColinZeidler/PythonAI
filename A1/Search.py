@@ -45,23 +45,32 @@ class DepthFirstSearch(Search):
 class AStarSearch(Search):
     def __init__(self, startstate, endstate, heuristic_func):
         Search.__init__(self, startstate, endstate)
-        self.nodes = deque([Node(None, startstate, h_func=heuristic_func, goal_state=endstate)])
+        self.nodes = [Node(None, startstate, h_func=heuristic_func, goal_state=endstate)]
 
     def addnodes(self, newnodes):
         Search.addnodes(self, newnodes)
-        self.nodes = sorted(self.nodes, key=lambda x: x.cost + x.heuristic)
+        self.nodes = sorted(self.nodes, key=lambda x: x.cost + x.heuristic, reverse=True)
 
     def next(self):
-        self.nodes.popleft()
+        return self.nodes.pop()
 
 
 # Bridge Heuristic functions
 def bridge_h_1(current_state, goal_state):
-    pass
+    """
+    adds up the amount of time remaining on the left side
+    :param current_state:
+    :param goal_state:
+    :return:
+    """
+    h = 0
+    for x in current_state.state[0].values():
+        h += x
+    return h
 
 
 def bridge_h_2(current_state, goal_state):
-    pass
+    return 0
 
 
 def bridge_h_average(current_state, goal_state):
@@ -72,11 +81,22 @@ def bridge_h_average(current_state, goal_state):
 
 # Tile Heuristic functions
 def tile_h_1(current_state, goal_state):
-    pass
+    """
+    Counts the number of tiles out of position
+    :param current_state:
+    :param goal_state:
+    :return:
+    """
+    count = 0
+    for y in range(len(current_state.state)):
+        for x in range(len(current_state.state[y])):
+            if current_state.state[y][x] != goal_state.state[y][x]:
+                count += 1
+    return count
 
 
 def tile_h_2(current_state, goal_state):
-    pass
+    return 0
 
 
 def tile_h_average(current_state, goal_state):
@@ -101,7 +121,7 @@ def bridge_search():
 
     start[0]['t'] = 0
     end[1]['t'] = 0
-    return BridgeState(start), BridgeState(end)
+    return BridgeState(start, 0), BridgeState(end, 0)
 
 
 def tile_search():
@@ -124,7 +144,7 @@ def tile_search():
         for x in range(rows):
             end.append(f.readline().strip().split(','))
         print("End: {}".format(end))
-    return TileState(start), TileState(end)
+    return TileState(start, 0), TileState(end, 0)
 
 
 if __name__ == "__main__":
@@ -169,14 +189,15 @@ if __name__ == "__main__":
         elif problem == 2:
             h_func = tile_h_average
 
-    if problem >= 3:
-        s_class == AStarSearch(start, end, h_func)
+    if search >= 3:
+        s_class = AStarSearch(start, end, h_func)
 
     if start is None or end is None or s_class is None:
         print("Bad input")
         exit(-1)
 
     final_node = s_class.runsearch()
+    final_cost = final_node.cost
     count = 0
     l = []
     while final_node.parent is not None:
@@ -189,3 +210,4 @@ if __name__ == "__main__":
     for state in l:
         print(state)
     print("Path to solution took {} nodes".format(count))
+    print("Total cost was: {}".format(final_cost))

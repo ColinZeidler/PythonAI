@@ -3,8 +3,9 @@ from copy import deepcopy
 
 
 class State(object):
-    def __init__(self, my_state):
+    def __init__(self, my_state, cost):
         self.state = my_state
+        self.cost = cost
 
     def build_states(self):
         pass
@@ -35,11 +36,11 @@ class BridgeState(State):
                 temp2 = deepcopy(temp)
                 temp2[1][pair[0]] = temp2[0].pop(pair[0])
                 temp2[1][pair[1]] = temp2[0].pop(pair[1])
-                new_states.append(BridgeState(temp2))
+                new_states.append(BridgeState(temp2, max(self.state[0][pair[0]], self.state[0][pair[1]])))
             for k in temp[0].keys():
                 temp2 = deepcopy(temp)
                 temp2[1][k] = temp2[0].pop(k)
-                new_states.append(BridgeState(temp2))
+                new_states.append(BridgeState(temp2, self.state[0][k]))
         elif 't' in self.state[1]:
             temp = deepcopy(self.state)
             temp[0]['t'] = temp[1].pop('t')
@@ -47,11 +48,11 @@ class BridgeState(State):
                 temp2 = deepcopy(temp)
                 temp2[0][pair[0]] = temp2[1].pop(pair[0])
                 temp2[0][pair[1]] = temp2[1].pop(pair[1])
-                new_states.append(BridgeState(temp2))
+                new_states.append(BridgeState(temp2, max(self.state[1][pair[0]], self.state[1][pair[1]])))
             for k in temp[1].keys():
                 temp2 = deepcopy(temp)
                 temp2[0][k] = temp2[1].pop(k)
-                new_states.append(BridgeState(temp2))
+                new_states.append(BridgeState(temp2, self.state[1][k]))
         return new_states
 
     def __str__(self):
@@ -83,7 +84,7 @@ class TileState(State):
                                     temp = deepcopy(self.state)
                                     temp[x][y] = self.state[x2][y2]
                                     temp[x2][y2] = self.state[x][y]
-                                    new_states.append(TileState(temp))
+                                    new_states.append(TileState(temp, 1))
                     for xmove in [1, -1]:
                         for ymove in [2, -2]:
                             x2 = x + xmove
@@ -93,7 +94,7 @@ class TileState(State):
                                     temp = deepcopy(self.state)
                                     temp[x][y] = self.state[x2][y2]
                                     temp[x2][y2] = self.state[x][y]
-                                    new_states.append(TileState(temp))
+                                    new_states.append(TileState(temp, 1))
                     # end of chess knight moves
 
         for x in range(blank_x-1, blank_x + 2):
@@ -103,7 +104,7 @@ class TileState(State):
                         temp = deepcopy(self.state)
                         temp[blank_x][blank_y] = temp[x][y]
                         temp[x][y] = BLANK
-                        new_states.append(TileState(temp))
+                        new_states.append(TileState(temp, 1))
 
         return new_states
 
@@ -116,7 +117,7 @@ class TileState(State):
 
 if __name__ == "__main__":
     state = [[8, '', 1], [4, 6, 2], [7, 5, 3]]
-    t = TileState(state)
+    t = TileState(state, 0)
     print("old")
     print(t)
     results = t.build_states()
