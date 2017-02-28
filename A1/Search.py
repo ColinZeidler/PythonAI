@@ -19,7 +19,6 @@ class Search(object):
 
     def runsearch(self):
         """
-
         :return: Endstate Node
         """
         currentnode = self.next()
@@ -87,8 +86,6 @@ def tile_h_average(current_state, goal_state):
 
 
 def bridge_search():
-    # start = BridgeState([{'1': 1, '2': 2, '3': 3, '4': 4, '5': 5, 't': 0}, {}])
-    # end = BridgeState([{}, {'1': 1, '2': 2, '3': 3, '4': 4, '5': 5, 't': 0}])
     start = [{}, {}]
     end = [{}, {}]
 
@@ -128,12 +125,6 @@ def tile_search():
             end.append(f.readline().strip().split(','))
         print("End: {}".format(end))
     return TileState(start), TileState(end)
-    # dfs = DepthFirstSearch(TileState(start), TileState(end))
-    # node = dfs.runsearch()
-
-    # runs out of memory
-    # bfs = BreadthFirstSearch(TileState(start), TileState(end))
-    # node = bfs.runsearch()
 
 
 if __name__ == "__main__":
