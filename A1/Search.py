@@ -95,8 +95,26 @@ def tile_h_1(current_state, goal_state):
     return count
 
 
-def tile_h_2(current_state, goal_state):
-    return 0
+def tile_h_2(current_state, goal_state):  # silly slow currently
+    """
+    Sum the distances for every tile out of position to their destination
+    :param current_state:
+    :param goal_state:
+    :return:
+    """
+    count = 0
+    for y in range(len(current_state.state)):
+        for x in range(len(current_state.state[y])):
+            if current_state.state[y][x] != goal_state.state[y][x]:
+                c = current_state.state[y][x]
+                for y2 in range(len(goal_state.state)):
+                    row = goal_state.state[y]
+                    if c in row:
+                        x2 = row.index(c)
+                        count += abs(x - x2) + abs(y - y2)
+                        break
+
+    return count
 
 
 def tile_h_average(current_state, goal_state):
