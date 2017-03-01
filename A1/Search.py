@@ -70,7 +70,16 @@ def bridge_h_1(current_state, goal_state):
 
 
 def bridge_h_2(current_state, goal_state):
-    return 0
+    """
+    Number of items left on the left side
+    :param current_state:
+    :param goal_state:
+    :return:
+    """
+    h = len(current_state.state[0])
+    if h > 0:
+        h *= max(current_state.state[0].values())
+    return h
 
 
 def bridge_h_average(current_state, goal_state):
@@ -88,9 +97,9 @@ def tile_h_1(current_state, goal_state):
     :return:
     """
     count = 0
-    for y in range(len(current_state.state)):
-        for x in range(len(current_state.state[y])):
-            if current_state.state[y][x] != goal_state.state[y][x]:
+    for y, row in enumerate(current_state.state):
+        for x, item in enumerate(row):
+            if item == goal_state.state[y][x]:
                 count += 1
     return count
 
@@ -103,16 +112,15 @@ def tile_h_2(current_state, goal_state):  # silly slow currently
     :return:
     """
     count = 0
-    for y in range(len(current_state.state)):
-        for x in range(len(current_state.state[y])):
-            if current_state.state[y][x] != goal_state.state[y][x]:
-                c = current_state.state[y][x]
-                for y2 in range(len(goal_state.state)):
-                    row = goal_state.state[y]
-                    if c in row:
-                        x2 = row.index(c)
-                        count += abs(x - x2) + abs(y - y2)
-                        break
+    for y, row in enumerate(current_state.state):
+        for x, item in enumerate(row):
+            for y2, i in enumerate(goal_state.state):
+                try:
+                    x2 = i.index(item)
+                except ValueError:
+                    continue
+
+                count += abs(x - x2) + abs(y - y2)
 
     return count
 
@@ -216,12 +224,13 @@ if __name__ == "__main__":
 
     final_node = s_class.runsearch()
     final_cost = final_node.cost
-    count = 0
+    count = 1
     l = []
     while final_node.parent is not None:
         l.append(final_node.state)
         count += 1
         final_node = final_node.parent
+    l.append(final_node.state)
 
     l.reverse()
 
