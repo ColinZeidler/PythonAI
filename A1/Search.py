@@ -99,7 +99,7 @@ def tile_h_1(current_state, goal_state):
     count = 0
     for y, row in enumerate(current_state.state):
         for x, item in enumerate(row):
-            if item == goal_state.state[y][x]:
+            if item != goal_state.state[y][x]:
                 count += 1
     return count
 
