@@ -57,8 +57,12 @@ class Game(object):
 
         xdiff = abs(start[0] - dest[0])
         ydiff = abs(start[1] - dest[1])
-        # TODO only allowed to move in one axis, total move must be less or equal than the number moving
-        if False:
+        # only allowed to move in one axis
+        if xdiff > 0 and ydiff > 0:
+            return False
+
+        # total move must be less or equal than the number moving
+        if max(xdiff, ydiff) > start[2]:
             return False
 
         if not self.ok_pos(start[0], start[1]):
@@ -143,6 +147,15 @@ class GameBoard(object):
         del self.boardState[sy][sx][-c:]
 
         self.boardState[dy][dx].extend(tmp)
+
+        # handle deleting pieces when more than 5 are in one tile
+        removed = []
+        new_h = len(self.boardState[dy][dx])
+        if new_h > 5:
+            removed = self.boardState[dy][dx][:new_h-5]
+            del self.boardState[dy][dx][:new_h-5]
+        # return pieces that get deleted
+        return removed
 
     def __getitem__(self, item):
         return self.boardState[item]
