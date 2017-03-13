@@ -1,13 +1,13 @@
 """Author, Colin Zeidler"""
 import copy
-from A2.Player import Human, Computer, h_1, h_2
+from A2.Player import Human, Computer, h_1, h_2, h_minimize_opponent
 
 
 class Game(object):
     def __init__(self):
         # self.p1 = Human(self, "R")
-        self.p1 = Computer(self, "R", h_1)
-        self.p2 = Computer(self, "G", h_2)
+        self.p1 = Computer(self, "R", h_2)
+        self.p2 = Computer(self, "G", h_minimize_opponent)
         self.board = GameBoard()
         self.board.setup_2player(self.p1.id, self.p2.id)
         self.current_player = self.p1
@@ -19,6 +19,10 @@ class Game(object):
             # check if p1 owns any towers
             self.current_player = self.p1
             self.next_player = self.p2
+            if len(self.get_moves_for_current_player()) == 0:
+                print("Player", self.current_player.id, "lost")
+                keep_playing = False
+                continue
             print("Player", self.current_player.id, "turn")
             print(self.board)
             move = self.current_player.get_move()
@@ -27,13 +31,16 @@ class Game(object):
             # check if p2 owns any towers
             self.current_player = self.p2
             self.next_player = self.p1
+            if len(self.get_moves_for_current_player()) == 0:
+                print("Player", self.current_player.id, "lost")
+                keep_playing = False
+                continue
             print("Player", self.current_player.id, "turn")
             print(self.board)
             move = self.current_player.get_move()
             self.board.apply_move(move)
 
-            if False:
-                keep_playing = False
+        print(self.board)
 
     def get_moves_for_player(self, player_id):
         moves = []

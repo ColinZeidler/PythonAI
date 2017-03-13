@@ -1,5 +1,5 @@
 """Author, Colin Zeidler"""
-MAX_DEPTH = 2
+MAX_DEPTH = 1
 
 
 class Player(object):
@@ -119,7 +119,7 @@ class Computer(Player):
         return beta
 
 
-# two heuristic functions for the AI to use
+# heuristic functions for the AI to use
 def h_1(player, board, killed_items):
     """diff player owned stacks with opponent stacks"""
     pid = player.id
@@ -150,5 +150,18 @@ def h_2(player, board, killed_items):
                 continue
 
             if tile[-1] == pid:
-                count += 1
+                count += 1*len(tile)  # larger stacks are more valuable
     return count
+
+
+def h_minimize_opponent(player, board, killed):
+    pid = player.id
+    score = 0
+    for row in board:
+        for tile in row:
+            if tile is None or len(tile) == 0:
+                continue
+
+            if tile[-1] != pid:
+                score -= 2
+    return score
