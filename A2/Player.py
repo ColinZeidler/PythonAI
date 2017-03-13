@@ -1,4 +1,5 @@
 """Author, Colin Zeidler"""
+MAX_DEPTH = 2
 
 
 class Player(object):
@@ -76,6 +77,78 @@ def get_int(text):
 
 
 class Computer(Player):
+    def __init__(self, game, id, h_func):
+        Player.__init__(self, game, id)
+        self.h_func = h_func
+
     def get_move(self):
         """Looks at the current board state, and calculates best move"""
-        pass
+        children_moves = self.game.get_moves_for_current_player()
+        best_move = None
+        best_score = -100000
+        for move in children_moves:
+            score = self.min_value(move, -100000, 100000, 1)
+            if score > best_score:
+                best_score = score
+                best_move = move
+
+        return best_move
+
+    def max_value(self, move, alpha, beta, depth):
+        board, killed_items = self.game.board.new_board_from_move(move)
+        if depth >= MAX_DEPTH:
+            return self.h_func(self, board, killed_items)
+        children_moves = self.game.get_moves_for_current_player()
+        for c in children_moves:
+            t = self.min_value(c, alpha, beta, depth+1)
+            alpha = max(alpha, t)
+            if alpha >= beta:
+                return alpha
+        return alpha
+
+    def min_value(self, move, alpha, beta, depth):
+        board, killed_items = self.game.board.new_board_from_move(move)
+        if depth >= MAX_DEPTH:
+            return self.h_func(self, board, killed_items)
+        children_moves = self.game.get_moves_for_next_player()
+        for c in children_moves:
+            t = self.max_value(c, alpha, beta, depth+1)
+            beta = min(beta, t)
+            if beta <= alpha:
+                return beta
+        return beta
+
+
+# two heuristic functions for the AI to use
+def h_1(player, board, killed_items):
+    """diff player owned stacks with opponent stacks"""
+    pid = player.id
+    count = 0
+    for y, row in enumerate(board):
+        for x, tile in enumerate(row):
+            if tile is None or len(tile) <= 0:
+                continue
+
+            if tile[-1] == pid:
+                count += 1
+            else:
+                count -= 1
+
+    for i in killed_items:
+        if i != pid:
+            count += 1
+
+    return count
+
+
+def h_2(player, board, killed_items):
+    pid = player.id
+    count = 0
+    for y, row, in enumerate(board):
+        for x, tile in enumerate(row):
+            if tile is None or len(tile) <= 0:
+                continue
+
+            if tile[-1] == pid:
+                count += 1
+    return count

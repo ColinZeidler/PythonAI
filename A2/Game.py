@@ -1,29 +1,70 @@
 """Author, Colin Zeidler"""
-from A2.Player import Human, Computer
+import copy
+from A2.Player import Human, Computer, h_1, h_2
 
 
 class Game(object):
     def __init__(self):
-        self.p1 = Human(self, "R")
-        self.p2 = Computer(self, "G")
+        # self.p1 = Human(self, "R")
+        self.p1 = Computer(self, "R", h_1)
+        self.p2 = Computer(self, "G", h_2)
         self.board = GameBoard()
-        self.board.setup_2player(self.p1, self.p2)
+        self.board.setup_2player(self.p1.id, self.p2.id)
+        self.current_player = self.p1
+        self.next_player = self.p2
 
     def play(self):
         keep_playing = True
         while keep_playing:
             # check if p1 owns any towers
-            print("Player", self.p1.id, "turn")
-            move = self.p1.get_move()
+            self.current_player = self.p1
+            self.next_player = self.p2
+            print("Player", self.current_player.id, "turn")
+            print(self.board)
+            move = self.current_player.get_move()
             self.board.apply_move(move)
 
             # check if p2 owns any towers
-            # print("Player", self.p1.id, "turn")
-            # move = self.p2.get_move()
-            # self.board.apply_move(move)
+            self.current_player = self.p2
+            self.next_player = self.p1
+            print("Player", self.current_player.id, "turn")
+            print(self.board)
+            move = self.current_player.get_move()
+            self.board.apply_move(move)
 
             if False:
                 keep_playing = False
+
+    def get_moves_for_player(self, player_id):
+        moves = []
+        for y, row in enumerate(self.board):
+            for x, tile in enumerate(row):
+                if tile is None or len(tile) <= 0:
+                    continue
+
+                if tile[-1] == player_id:
+                    for count in range(1, len(tile)+1):
+                        for dist in range(1, count+1):
+                            m = ((x, y, count), (x+dist, y, count))
+                            if self.valid_move(m, player_id):
+                                moves.append(m)
+                            m = ((x, y, count), (x-dist, y, count))
+                            if self.valid_move(m, player_id):
+                                moves.append(m)
+                            m = ((x, y, count), (x, y+dist, count))
+                            if self.valid_move(m, player_id):
+                                moves.append(m)
+                            m = ((x, y, count), (x, y-dist, count))
+                            if self.valid_move(m, player_id):
+                                moves.append(m)
+
+        return moves
+
+    def get_moves_for_current_player(self):
+        return self.get_moves_for_player(self.current_player.id)
+
+    def get_moves_for_next_player(self):
+        return self.get_moves_for_player(self.next_player.id)
 
     def ok_pos(self, x, y):
 
@@ -92,50 +133,58 @@ class GameBoard(object):
                            ]
 
     def setup_2player(self, p1, p2):
-        self.boardState[1][1].append(p1.id)
-        self.boardState[1][2].append(p1.id)
-        self.boardState[1][3].append(p2.id)
-        self.boardState[1][4].append(p2.id)
-        self.boardState[1][5].append(p1.id)
-        self.boardState[1][6].append(p1.id)
+        self.boardState[1][1].append(p1)
+        self.boardState[1][2].append(p1)
+        self.boardState[1][3].append(p2)
+        self.boardState[1][4].append(p2)
+        self.boardState[1][5].append(p1)
+        self.boardState[1][6].append(p1)
 
-        self.boardState[2][1].append(p2.id)
-        self.boardState[2][2].append(p2.id)
-        self.boardState[2][3].append(p1.id)
-        self.boardState[2][4].append(p1.id)
-        self.boardState[2][5].append(p2.id)
-        self.boardState[2][6].append(p2.id)
+        self.boardState[2][1].append(p2)
+        self.boardState[2][2].append(p2)
+        self.boardState[2][3].append(p1)
+        self.boardState[2][4].append(p1)
+        self.boardState[2][5].append(p2)
+        self.boardState[2][6].append(p2)
 
-        self.boardState[3][1].append(p1.id)
-        self.boardState[3][2].append(p1.id)
-        self.boardState[3][3].append(p2.id)
-        self.boardState[3][4].append(p2.id)
-        self.boardState[3][5].append(p1.id)
-        self.boardState[3][6].append(p1.id)
+        self.boardState[3][1].append(p1)
+        self.boardState[3][2].append(p1)
+        self.boardState[3][3].append(p2)
+        self.boardState[3][4].append(p2)
+        self.boardState[3][5].append(p1)
+        self.boardState[3][6].append(p1)
 
-        self.boardState[4][1].append(p2.id)
-        self.boardState[4][2].append(p2.id)
-        self.boardState[4][3].append(p1.id)
-        self.boardState[4][4].append(p1.id)
-        self.boardState[4][5].append(p2.id)
-        self.boardState[4][6].append(p2.id)
+        self.boardState[4][1].append(p2)
+        self.boardState[4][2].append(p2)
+        self.boardState[4][3].append(p1)
+        self.boardState[4][4].append(p1)
+        self.boardState[4][5].append(p2)
+        self.boardState[4][6].append(p2)
 
-        self.boardState[5][1].append(p1.id)
-        self.boardState[5][2].append(p1.id)
-        self.boardState[5][3].append(p2.id)
-        self.boardState[5][4].append(p2.id)
-        self.boardState[5][5].append(p1.id)
-        self.boardState[5][6].append(p1.id)
+        self.boardState[5][1].append(p1)
+        self.boardState[5][2].append(p1)
+        self.boardState[5][3].append(p2)
+        self.boardState[5][4].append(p2)
+        self.boardState[5][5].append(p1)
+        self.boardState[5][6].append(p1)
 
-        self.boardState[6][1].append(p2.id)
-        self.boardState[6][2].append(p2.id)
-        self.boardState[6][3].append(p1.id)
-        self.boardState[6][4].append(p1.id)
-        self.boardState[6][5].append(p2.id)
-        self.boardState[6][6].append(p2.id)
+        self.boardState[6][1].append(p2)
+        self.boardState[6][2].append(p2)
+        self.boardState[6][3].append(p1)
+        self.boardState[6][4].append(p1)
+        self.boardState[6][5].append(p2)
+        self.boardState[6][6].append(p2)
 
     def setup_4player(self):
         pass
+
+    def new_board_from_move(self, move):
+        """Returns a new GameBoard instance with the move applied. and the items that got deleted
+        Does not modify the current object"""
+        new_board = GameBoard()
+        new_board.boardState = copy.deepcopy(self.boardState)
+        deleted = new_board.apply_move(move)
+        return new_board, deleted
 
     def apply_move(self, move):
         sx = move[0][0]
