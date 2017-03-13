@@ -1,13 +1,21 @@
 """Author, Colin Zeidler"""
 import copy
-from A2.Player import Human, Computer, h_1, h_2, h_minimize_opponent
+from A2.Player import Human, Computer, h_diff_vs_opponent, h_max_my_stacks, h_minimize_opponent
 
 
 class Game(object):
-    def __init__(self):
+    def __init__(self, p1=None, p2=None):
         # self.p1 = Human(self, "R")
-        self.p1 = Computer(self, "R", h_2)
-        self.p2 = Computer(self, "G", h_minimize_opponent)
+        if p1 is None:
+            self.p1 = Computer(self, "R", h_minimize_opponent)
+        else:
+            self.p1 = p1
+            self.p1.game = self
+        if p2 is None:
+            self.p2 = Computer(self, "G", h_minimize_opponent)
+        else:
+            self.p2 = p2
+            self.p2.game = self
         self.board = GameBoard()
         self.board.setup_2player(self.p1.id, self.p2.id)
         self.current_player = self.p1
@@ -42,9 +50,12 @@ class Game(object):
 
         print(self.board)
 
-    def get_moves_for_player(self, player_id):
+    def get_moves_for_player(self, player_id, board=None):
         moves = []
-        for y, row in enumerate(self.board):
+        state_board = self.board
+        if board is not None:
+            state_board = board
+        for y, row in enumerate(state_board):
             for x, tile in enumerate(row):
                 if tile is None or len(tile) <= 0:
                     continue
@@ -53,25 +64,25 @@ class Game(object):
                     for count in range(1, len(tile)+1):
                         for dist in range(1, count+1):
                             m = ((x, y, count), (x+dist, y, count))
-                            if self.valid_move(m, player_id):
+                            if self.valid_move(m, player_id, board=state_board):
                                 moves.append(m)
                             m = ((x, y, count), (x-dist, y, count))
-                            if self.valid_move(m, player_id):
+                            if self.valid_move(m, player_id, board=state_board):
                                 moves.append(m)
                             m = ((x, y, count), (x, y+dist, count))
-                            if self.valid_move(m, player_id):
+                            if self.valid_move(m, player_id, board=state_board):
                                 moves.append(m)
                             m = ((x, y, count), (x, y-dist, count))
-                            if self.valid_move(m, player_id):
+                            if self.valid_move(m, player_id, board=state_board):
                                 moves.append(m)
 
         return moves
 
-    def get_moves_for_current_player(self):
-        return self.get_moves_for_player(self.current_player.id)
+    def get_moves_for_current_player(self, board=None):
+        return self.get_moves_for_player(self.current_player.id, board=board)
 
-    def get_moves_for_next_player(self):
-        return self.get_moves_for_player(self.next_player.id)
+    def get_moves_for_next_player(self, board=None):
+        return self.get_moves_for_player(self.next_player.id, board=board)
 
     def ok_pos(self, x, y):
 
@@ -91,13 +102,16 @@ class Game(object):
 
         return True
 
-    def valid_move(self, move, player_id):
+    def valid_move(self, move, player_id, board=None):
         """:returns: True if the move is a valid move, False otherwise
         Things to check:
         valid start and end positions
         Move distance is <= to number of pieces moving
         Number of pieces moving is <= to number of pieces at starting pos
         Player making move owns the piece at top of the stack"""
+        state_board = self.board
+        if board is not None:
+            state_board = board
         start = move[0]
         dest = move[1]
         if start == dest:
@@ -118,10 +132,10 @@ class Game(object):
         if not self.ok_pos(dest[0], dest[1]):
             return False
 
-        if start[2] > len(self.board[start[1]][start[0]]):
+        if start[2] > len(state_board[start[1]][start[0]]):
             return False
 
-        if self.board[start[1]][start[0]][-1] != player_id:
+        if state_board[start[1]][start[0]][-1] != player_id:
             return False
 
         return True
@@ -233,5 +247,71 @@ class GameBoard(object):
 
 if __name__ == "__main__":
     print("Starting 2 player game")
-    game = Game()
+
+    print("Select Game mode:")
+    print("1. Human vs Computer")
+    print("2. Computer vs Computer")
+    bad_input = True
+    while bad_input:
+        selction = input("> ")
+        try:
+            selction = int(selction)
+            bad_input = False
+            if selction != 1 and selction != 2:
+                print("Choose from 1 to 2")
+                bad_input = True
+        except ValueError:
+            print("Enter an Integer")
+
+    print("Select a heuristic for the AI")
+    print("1. diff against opponent")
+    print("2. maximize my stack count")
+    print("3. minimize opponent stack count")
+    bad_input = True
+    while bad_input:
+        h_choice = input("> ")
+        try:
+            h_choice = int(h_choice)
+            bad_input = False
+            if h_choice != 1 and h_choice != 2 and h_choice != 3:
+                print("Choose from 1 to 3")
+                bad_input = True
+        except ValueError:
+            print("Enter an Integer")
+    if h_choice == 1:
+        h1 = h_diff_vs_opponent
+    if h_choice == 2:
+        h1 = h_max_my_stacks
+    if h_choice == 3:
+        h1 = h_minimize_opponent
+
+    if selction == 1:
+        player1 = Human(None, "R")
+        player2 = Computer(None, "G", h1)
+    elif selction == 2:
+        print("Select a heuristic for the second AI")
+        print("1. diff against opponent")
+        print("2. maximize my stack count")
+        print("3. minimize opponent stack count")
+        bad_input = True
+        while bad_input:
+            h_choice = input("> ")
+            try:
+                h_choice = int(h_choice)
+                bad_input = False
+                if h_choice != 1 and h_choice != 2 and h_choice != 3:
+                    print("Choose from 1 to 3")
+                    bad_input = True
+            except ValueError:
+                print("Enter an Integer")
+        if h_choice == 1:
+            h2 = h_diff_vs_opponent
+        if h_choice == 2:
+            h2 = h_max_my_stacks
+        if h_choice == 3:
+            h2 = h_minimize_opponent
+        player1 = Computer(None, "R", h1)
+        player2 = Computer(None, "G", h2)
+
+    game = Game(player1, player2)
     game.play()

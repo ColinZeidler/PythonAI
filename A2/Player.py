@@ -1,5 +1,5 @@
 """Author, Colin Zeidler"""
-MAX_DEPTH = 1
+MAX_DEPTH = 2
 
 
 class Player(object):
@@ -86,6 +86,7 @@ class Computer(Player):
         children_moves = self.game.get_moves_for_current_player()
         best_move = None
         best_score = -100000
+        print(len(children_moves))
         for move in children_moves:
             score = self.min_value(move, -100000, 100000, 1)
             if score > best_score:
@@ -98,7 +99,7 @@ class Computer(Player):
         board, killed_items = self.game.board.new_board_from_move(move)
         if depth >= MAX_DEPTH:
             return self.h_func(self, board, killed_items)
-        children_moves = self.game.get_moves_for_current_player()
+        children_moves = self.game.get_moves_for_current_player(board=board)
         for c in children_moves:
             t = self.min_value(c, alpha, beta, depth+1)
             alpha = max(alpha, t)
@@ -110,7 +111,7 @@ class Computer(Player):
         board, killed_items = self.game.board.new_board_from_move(move)
         if depth >= MAX_DEPTH:
             return self.h_func(self, board, killed_items)
-        children_moves = self.game.get_moves_for_next_player()
+        children_moves = self.game.get_moves_for_next_player(board=board)
         for c in children_moves:
             t = self.max_value(c, alpha, beta, depth+1)
             beta = min(beta, t)
@@ -120,7 +121,7 @@ class Computer(Player):
 
 
 # heuristic functions for the AI to use
-def h_1(player, board, killed_items):
+def h_diff_vs_opponent(player, board, killed_items):
     """diff player owned stacks with opponent stacks"""
     pid = player.id
     count = 0
@@ -141,7 +142,7 @@ def h_1(player, board, killed_items):
     return count
 
 
-def h_2(player, board, killed_items):
+def h_max_my_stacks(player, board, killed_items):
     pid = player.id
     count = 0
     for y, row, in enumerate(board):
