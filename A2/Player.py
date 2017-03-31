@@ -1,5 +1,5 @@
 """Author, Colin Zeidler"""
-MAX_DEPTH = 2
+MAX_DEPTH = 3
 
 
 class Player(object):
