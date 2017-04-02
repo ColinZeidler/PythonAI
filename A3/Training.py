@@ -170,15 +170,17 @@ def five_fold_validation(input_data_set):
             for a, b in enumerate(training_data):
                 training_data[a].extend(data[a])
 
+        # specific to bayesian independent classification
         trainers = [bayesian_independent_trainer(x) for x in training_data]
         for cid, test_data_class in enumerate(test_data):
             r = bayesian_independent_tester(trainers, test_data_class)
             class_result = confidence_classifier(r, test_data_class, class_only=True)
             for cr in class_result:
-                if cr == i:
+                if cr == cid:
                     correct += 1
                 total += 1
 
+    print(total, correct)
     return correct/total
 
 
@@ -187,22 +189,3 @@ if __name__ == "__main__":
 
     accuracy = five_fold_validation(d)
     print(accuracy*100)
-
-    # split data into 5 groups, 4 to train 1 to test
-    # test_data = [x[int((len(x)/5)*4):] for x in d]
-    # training_data = [x[:int((len(x)/5)*4)] for x in d]
-    #
-    # trainers = [bayesian_independent_trainer(x) for x in training_data]
-    # r = bayesian_independent_tester(trainers, test_data[0])
-    # print("Testing class 0")
-    # for x in confidence_classifier(r, test_data[0]):
-    #     print(x)
-    # print("Testing class 1")
-    # for x in confidence_classifier(r, test_data[1]):
-    #     print(x)
-    # print("Testing class 2")
-    # for x in confidence_classifier(r, test_data[2]):
-    #     print(x)
-    # print("Testing class 3")
-    # for x in confidence_classifier(r, test_data[3]):
-    #     print(x)
