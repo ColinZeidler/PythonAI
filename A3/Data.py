@@ -45,7 +45,7 @@ class DataFeature(object):
     def get_value(self):
         if self.value is None:
             r = random.random()
-            if r > self.get_probablity(0):
+            if r <= self.get_probablity(0):
                 self.value = 0
             else:
                 self.value = 1

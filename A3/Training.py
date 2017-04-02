@@ -1,4 +1,6 @@
 from A3.Data import DataClass, DataFeature
+import operator
+import functools
 
 
 def get_all_data():
@@ -98,5 +100,60 @@ def get_all_data():
     print("Item Count:", [len(x) for x in data_list])
     return data_list
 
+# estimate unknown dependence tree
+# 1. calculate individual probability for each feature in the current class
+# 2. check probabilities of a feature when another feature is 1 or 0
+def dependece_tree_estimator(test_data):
+    pass
+
+
+def bayesian_independent_trainer(training_data):
+    """training data is a single class of data entries with 10 values each
+    :returns """
+
+    trainer = [0 for x in range(10)]
+    for d in training_data:
+        trainer = [x+1 if y == 0 else x for x, y in zip(trainer, d)]
+    trainer = [x/len(training_data) for x in trainer]
+
+    return trainer
+
+
+def bayesian_independent_tester(classes, test_data):
+    """input a list of bayesian_independent_trainers, and test data
+    :returns confidence for each test data on each trainer"""
+
+    result = []
+
+    for d in test_data:
+        # compare against each class_trainer
+        test = []
+        for c in classes:
+            confidence = [abs(di - ci) for di, ci in zip(d, c)]
+            confidence = functools.reduce(operator.mul, confidence, 1)
+            test.append(confidence)
+        result.append(test)
+    return result
+
+
+def confidence_classifier(data_confidences, test_data):
+    winner = 0
+    result = []
+    for d, td in zip(data_confidences, test_data):
+        for i in range(1, len(d)):
+            if d[i] > d[winner]:
+                winner = i
+        result.append((td, winner))
+    return result
+
+
 if __name__ == "__main__":
-    get_all_data()
+    d = get_all_data()
+
+    # TODO split data into 5 groups, 4 to train 1 to test
+    trainers = [bayesian_independent_trainer(x) for x in d]
+
+    test = d[0][-1]
+    train = d[0][:-1]
+    r = bayesian_independent_tester(trainers, [test])
+    print(confidence_classifier(r, [test]))
