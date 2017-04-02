@@ -1,104 +1,7 @@
-from A3.Data import DataClass, DataFeature
+from A3.Data import get_random_data, get_real_data
 import operator
 import functools
 
-
-def get_random_data():
-    data_classes = [DataClass()]
-
-    f1 = DataFeature(None, 0.27, 0.27)
-    data_classes[-1].add_feature(f1)
-    f2 = DataFeature(f1, 0.58, 0.84)
-    data_classes[-1].add_feature(f2)
-    f3 = DataFeature(f1, 0.67, 0.27)
-    data_classes[-1].add_feature(f3)
-    f4 = DataFeature(f1, 0.40, 0.76)
-    data_classes[-1].add_feature(f4)
-    f5 = DataFeature(f2, 0.48, 0.83)
-    data_classes[-1].add_feature(f5)
-    f6 = DataFeature(f3, 0.84, 0.94)
-    data_classes[-1].add_feature(f6)
-    f7 = DataFeature(f4, 0.32, 0.48)
-    data_classes[-1].add_feature(f7)
-    f8 = DataFeature(f4, 0.83, 0.28)
-    data_classes[-1].add_feature(f8)
-    f9 = DataFeature(f6, 0.66, 0.04)
-    data_classes[-1].add_feature(f9)
-    f0 = DataFeature(f6, 0.98, 0.85)
-    data_classes[-1].add_feature(f0)
-
-    data_classes.append(DataClass())
-    f1 = DataFeature(None, 0.56, 0.56)
-    data_classes[-1].add_feature(f1)
-    f2 = DataFeature(f1, 0.50, 0.17)
-    data_classes[-1].add_feature(f2)
-    f3 = DataFeature(f1, 0.97, 0.70)
-    data_classes[-1].add_feature(f3)
-    f4 = DataFeature(f1, 0.38, 0.81)
-    data_classes[-1].add_feature(f4)
-    f5 = DataFeature(f2, 0.02, 0.24)
-    data_classes[-1].add_feature(f5)
-    f6 = DataFeature(f3, 0.07, 0.95)
-    data_classes[-1].add_feature(f6)
-    f7 = DataFeature(f4, 0.79, 0.11)
-    data_classes[-1].add_feature(f7)
-    f8 = DataFeature(f4, 0.55, 0.05)
-    data_classes[-1].add_feature(f8)
-    f9 = DataFeature(f6, 0.66, 0.97)
-    data_classes[-1].add_feature(f9)
-    f0 = DataFeature(f6, 0.81, 0.63)
-    data_classes[-1].add_feature(f0)
-
-    data_classes.append(DataClass())
-    f1 = DataFeature(None, 0.88, 0.88)
-    data_classes[-1].add_feature(f1)
-    f2 = DataFeature(f1, 0.68, 0.69)
-    data_classes[-1].add_feature(f2)
-    f3 = DataFeature(f1, 0.66, 0.19)
-    data_classes[-1].add_feature(f3)
-    f4 = DataFeature(f1, 0.55, 0.53)
-    data_classes[-1].add_feature(f4)
-    f5 = DataFeature(f2, 0.60, 0.46)
-    data_classes[-1].add_feature(f5)
-    f6 = DataFeature(f3, 0.76, 0.39)
-    data_classes[-1].add_feature(f6)
-    f7 = DataFeature(f4, 0.86, 0.31)
-    data_classes[-1].add_feature(f7)
-    f8 = DataFeature(f4, 0.29, 0.05)
-    data_classes[-1].add_feature(f8)
-    f9 = DataFeature(f6, 0.88, 0.57)
-    data_classes[-1].add_feature(f9)
-    f0 = DataFeature(f6, 0.14, 0.42)
-    data_classes[-1].add_feature(f0)
-
-    data_classes.append(DataClass())
-    f1 = DataFeature(None, 0.01, 0.01)
-    data_classes[-1].add_feature(f1)
-    f2 = DataFeature(f1, 0.94, 0.60)
-    data_classes[-1].add_feature(f2)
-    f3 = DataFeature(f1, 0.44, 0.38)
-    data_classes[-1].add_feature(f3)
-    f4 = DataFeature(f1, 0.28, 0.40)
-    data_classes[-1].add_feature(f4)
-    f5 = DataFeature(f2, 0.43, 0.40)
-    data_classes[-1].add_feature(f5)
-    f6 = DataFeature(f3, 0.43, 0.58)
-    data_classes[-1].add_feature(f6)
-    f7 = DataFeature(f4, 0.15, 0.91)
-    data_classes[-1].add_feature(f7)
-    f8 = DataFeature(f4, 0.63, 0.36)
-    data_classes[-1].add_feature(f8)
-    f9 = DataFeature(f6, 0.43, 0.86)
-    data_classes[-1].add_feature(f9)
-    f0 = DataFeature(f6, 0.15, 0.69)
-    data_classes[-1].add_feature(f0)
-
-    data_list = []
-    for c in data_classes:
-        data_list.append([c.generate_sample() for x in range(2000)])
-    print("Class Count:", len(data_list))
-    print("Item Count:", [len(x) for x in data_list])
-    return data_list
 
 # estimate unknown dependence tree
 # 1. calculate individual probability for each feature in the current class
@@ -108,10 +11,10 @@ def dependece_tree_estimator(test_data):
 
 
 def bayesian_independent_trainer(training_data):
-    """training data is a single class of data entries with 10 values each
-    :returns """
+    """training data is a single class of data entries
+    :returns list of probabilities that each feature is 0"""
 
-    trainer = [0 for x in range(10)]
+    trainer = [0 for x in range(len(training_data))]
     for d in training_data:
         trainer = [x+1 if y == 0 else x for x, y in zip(trainer, d)]
     trainer = [x/len(training_data) for x in trainer]
@@ -150,7 +53,8 @@ def confidence_classifier(data_confidences, test_data, class_only=False):
     return result
 
 
-def five_fold_validation(input_data_set):
+def five_fold_validation(input_data_set, trainer=bayesian_independent_trainer,
+                         tester=bayesian_independent_tester, classifier=confidence_classifier):
     # split data into 5 equal groups
     splits = []
     start = 0
@@ -170,11 +74,10 @@ def five_fold_validation(input_data_set):
             for a, b in enumerate(training_data):
                 training_data[a].extend(data[a])
 
-        # specific to bayesian independent classification
-        trainers = [bayesian_independent_trainer(x) for x in training_data]
+        trainers = [trainer(x) for x in training_data]
         for cid, test_data_class in enumerate(test_data):
-            r = bayesian_independent_tester(trainers, test_data_class)
-            class_result = confidence_classifier(r, test_data_class, class_only=True)
+            r = tester(trainers, test_data_class)
+            class_result = classifier(r, test_data_class, class_only=True)
             for cr in class_result:
                 if cr == cid:
                     correct += 1
@@ -186,6 +89,5 @@ def five_fold_validation(input_data_set):
 
 if __name__ == "__main__":
     d = get_random_data()
-
     accuracy = five_fold_validation(d)
     print(accuracy*100)
