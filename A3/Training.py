@@ -3,7 +3,7 @@ import operator
 import functools
 
 
-def get_all_data():
+def get_random_data():
     data_classes = [DataClass()]
 
     f1 = DataFeature(None, 0.27, 0.27)
@@ -136,24 +136,73 @@ def bayesian_independent_tester(classes, test_data):
     return result
 
 
-def confidence_classifier(data_confidences, test_data):
+def confidence_classifier(data_confidences, test_data, class_only=False):
     winner = 0
     result = []
     for d, td in zip(data_confidences, test_data):
         for i in range(1, len(d)):
             if d[i] > d[winner]:
                 winner = i
-        result.append((td, winner))
+        if class_only:
+            result.append(winner)
+        else:
+            result.append((td, winner))
     return result
 
 
+def five_fold_validation(input_data_set):
+    # split data into 5 equal groups
+    splits = []
+    start = 0
+    end = 400
+    for i in range(5):
+        splits.append([x[start:end] for x in input_data_set])
+        start += 400
+        end += 400
+    # for each group combine the other 4 to train, then test with remaining one
+    correct = 0
+    total = 0
+    for i, test_data in enumerate(splits):
+        training_data = [[] for x in range(len(test_data))]
+        for x, data in enumerate(splits):
+            if i == x:
+                continue
+            for a, b in enumerate(training_data):
+                training_data[a].extend(data[a])
+
+        trainers = [bayesian_independent_trainer(x) for x in training_data]
+        for cid, test_data_class in enumerate(test_data):
+            r = bayesian_independent_tester(trainers, test_data_class)
+            class_result = confidence_classifier(r, test_data_class, class_only=True)
+            for cr in class_result:
+                if cr == i:
+                    correct += 1
+                total += 1
+
+    return correct/total
+
+
 if __name__ == "__main__":
-    d = get_all_data()
+    d = get_random_data()
 
-    # TODO split data into 5 groups, 4 to train 1 to test
-    trainers = [bayesian_independent_trainer(x) for x in d]
+    accuracy = five_fold_validation(d)
+    print(accuracy*100)
 
-    test = d[0][-1]
-    train = d[0][:-1]
-    r = bayesian_independent_tester(trainers, [test])
-    print(confidence_classifier(r, [test]))
+    # split data into 5 groups, 4 to train 1 to test
+    # test_data = [x[int((len(x)/5)*4):] for x in d]
+    # training_data = [x[:int((len(x)/5)*4)] for x in d]
+    #
+    # trainers = [bayesian_independent_trainer(x) for x in training_data]
+    # r = bayesian_independent_tester(trainers, test_data[0])
+    # print("Testing class 0")
+    # for x in confidence_classifier(r, test_data[0]):
+    #     print(x)
+    # print("Testing class 1")
+    # for x in confidence_classifier(r, test_data[1]):
+    #     print(x)
+    # print("Testing class 2")
+    # for x in confidence_classifier(r, test_data[2]):
+    #     print(x)
+    # print("Testing class 3")
+    # for x in confidence_classifier(r, test_data[3]):
+    #     print(x)
