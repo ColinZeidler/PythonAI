@@ -12,6 +12,8 @@ class Vertex(object):
         self.fid = feature_id
         self.p0 = None
         self.p1 = None
+        self.parent = None
+        self.children = []
 
     def calc_p(self, data_set):
         my_sum = 0
@@ -110,6 +112,8 @@ def dependence_tree_estimator(test_data):
     for e in graph_es:
         print(e)
 
+    # TODO build tree, starting with featureid of 0
+
 
 
 def bayesian_independent_trainer(training_data):
@@ -192,5 +196,5 @@ def five_fold_validation(input_data_set, trainer=bayesian_independent_trainer,
 if __name__ == "__main__":
     d = get_random_data()
     dependence_tree_estimator(d)
-    # accuracy = five_fold_validation(d)
-    # print(accuracy*100)
+    accuracy = five_fold_validation(d)
+    print(accuracy*100)
