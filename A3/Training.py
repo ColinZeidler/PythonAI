@@ -290,7 +290,7 @@ if __name__ == "__main__":
     accuracy = five_fold_validation(d, dependence=True)
     print("Accuracy", accuracy*100)
 
-    print("Real Data")
+    print("\nReal Data")
     d = get_real_data()
     print("Independent Bayesian")
     accuracy = five_fold_validation(d)
