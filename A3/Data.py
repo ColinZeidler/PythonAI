@@ -145,8 +145,6 @@ def get_random_data():
     data_list = []
     for c in data_classes:
         data_list.append([c.generate_sample() for x in range(2000)])
-    print("Class Count:", len(data_list))
-    print("Item Count:", [len(x) for x in data_list])
     return data_list
 
 

@@ -3,6 +3,7 @@ import operator
 import functools
 import itertools
 import math
+import copy
 
 
 class Vertex(object):
@@ -26,7 +27,11 @@ class Vertex(object):
         return self.fid
 
     def __str__(self):
-        return str(self.fid)
+        my_str = str(self.fid) + "->[ " + str(self.p0) + ", " + str(self.p1) + "]"
+        # for x in self.children:
+        #     my_str += str(x) + ","
+        # my_str += "] "
+        return my_str
 
 
 class Edge(object):
@@ -61,7 +66,7 @@ class Edge(object):
         self.p10 = s10 / len(data_set)
 
     def __str__(self):
-        return str(self.v1) + "-" + str(self.weight) + "->" + str(self.v2)
+        return str(self.v1) + "- " + str(self.weight) + "->" + str(self.v2)
 
 
 # estimate unknown dependence tree
@@ -73,7 +78,7 @@ def dependence_tree_estimator(test_data):
     for c in test_data:
         combined_data.extend(c)
 
-    print(len(combined_data))
+    # print(len(combined_data))
     # calculate indiviual probabilities for each feature
     vertexs = [Vertex(i) for i in range(len(combined_data[0]))]
     for v in vertexs:
@@ -109,11 +114,79 @@ def dependence_tree_estimator(test_data):
 
         graph_es.append(edge)
 
-    for e in graph_es:
-        print(e)
+    # for e in graph_es:
+    #     print(e)
 
-    # TODO build tree, starting with featureid of 0
+    # select root node
+    root = None
+    for v in graph_vs:
+        if v.fid == 0:
+            root = v
+            break
 
+    # recursivly assemble tree
+    current_node = root
+    build_tree(current_node, graph_es)
+
+    return graph_vs
+
+
+def build_tree(current_node, list_of_edges):
+    current_node.p0 = None
+    current_node.p1 = None
+    edge_list = list_of_edges[:]
+    for edge in list_of_edges:
+        if edge.v1 is current_node:
+            current_node.children.append(edge.v2)
+            edge.v2.parent = current_node
+            edge_list.remove(edge)
+        elif edge.v2 is current_node:
+            current_node.children.append(edge.v1)
+            edge.v1.parent = current_node
+            edge_list.remove(edge)
+    for child in current_node.children:
+        build_tree(child, edge_list)
+
+
+def bayesian_dependent_trainer(tree, training_data):
+    trainer_tree = copy.deepcopy(tree)
+    for v in trainer_tree:
+        # v.p0 is probability of 0 given parent is 0
+        # v.p1 is probability of 0 given parent is 1
+        v.p0 = 0
+        v.p1 = 0
+        for d in training_data:
+            if d[v.fid] == 0:
+                if v.parent is None:
+                    v.p0 += 1
+                    v.p1 += 1
+                elif d[v.parent.fid] == 0:
+                    v.p0 += 1
+                elif d[v.parent.fid] == 1:
+                    v.p1 += 1
+        v.p0 = v.p0 / len(training_data)
+        v.p1 = v.p1 / len(training_data)
+
+    return trainer_tree
+
+
+def bayesian_dependent_tester(class_trees, test_data):
+    result = []
+    for d in test_data:
+        row = []
+        for tree in class_trees:
+            conf = []
+            for v in tree:
+                if v.parent is not None:
+                    prob = v.p0 if d[v.parent.fid] == 0 else v.p1
+                else:
+                    prob = v.p0
+                conf.append(abs(d[v.fid] - prob))
+            conf = functools.reduce(operator.mul, conf, 1)
+            row.append(conf)
+        result.append(row)
+
+    return result
 
 
 def bayesian_independent_trainer(training_data):
@@ -159,16 +232,24 @@ def confidence_classifier(data_confidences, test_data, class_only=False):
     return result
 
 
-def five_fold_validation(input_data_set, trainer=bayesian_independent_trainer,
-                         tester=bayesian_independent_tester, classifier=confidence_classifier):
+def five_fold_validation(input_data_set, dependence=False, classifier=confidence_classifier):
+    # trim data sets down to length divisible by 5, based on smallest group
+    group_length = float("inf")
+    for d in input_data_set:
+        if len(d) < group_length:
+            group_length = len(d)
+    group_length = int(group_length/5)
+    input_data_set = [x[:int(group_length*5)] for x in input_data_set]
+
     # split data into 5 equal groups
     splits = []
     start = 0
-    end = 400
+    end = group_length
+    dep_tree = dependence_tree_estimator(input_data_set)
     for i in range(5):
         splits.append([x[start:end] for x in input_data_set])
-        start += 400
-        end += 400
+        start += group_length
+        end += group_length
     # for each group combine the other 4 to train, then test with remaining one
     correct = 0
     total = 0
@@ -180,9 +261,15 @@ def five_fold_validation(input_data_set, trainer=bayesian_independent_trainer,
             for a, b in enumerate(training_data):
                 training_data[a].extend(data[a])
 
-        trainers = [trainer(x) for x in training_data]
+        if dependence:
+            trainers = [bayesian_dependent_trainer(dep_tree, x) for x in training_data]
+        else:
+            trainers = [bayesian_independent_trainer(x) for x in training_data]
         for cid, test_data_class in enumerate(test_data):
-            r = tester(trainers, test_data_class)
+            if dependence:
+                r = bayesian_dependent_tester(trainers, test_data_class)
+            else:
+                r = bayesian_independent_tester(trainers, test_data_class)
             class_result = classifier(r, test_data_class, class_only=True)
             for cr in class_result:
                 if cr == cid:
@@ -195,6 +282,19 @@ def five_fold_validation(input_data_set, trainer=bayesian_independent_trainer,
 
 if __name__ == "__main__":
     d = get_random_data()
-    dependence_tree_estimator(d)
+    print("Random Data")
+    print("Independent Bayesian")
     accuracy = five_fold_validation(d)
-    print(accuracy*100)
+    print("Accuracy", accuracy*100)
+    print("Dependent Bayesian")
+    accuracy = five_fold_validation(d, dependence=True)
+    print("Accuracy", accuracy*100)
+
+    print("Real Data")
+    d = get_real_data()
+    print("Independent Bayesian")
+    accuracy = five_fold_validation(d)
+    print("Accuracy", accuracy*100)
+    print("Dependent Bayesian")
+    accuracy = five_fold_validation(d, dependence=True)
+    print("Accuracy", accuracy*100)
