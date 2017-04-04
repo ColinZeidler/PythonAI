@@ -92,9 +92,9 @@ def dependence_tree_estimator(test_data):
         # i=0, j=0
         weight = edge.p00*math.log2(edge.p00/(edge.v1.p0 * edge.v2.p0))
         # i=1, j=0
-        weight += edge.p00*math.log2(edge.p10/(edge.v1.p1 * edge.v2.p0))
+        weight += edge.p10*math.log2(edge.p10/(edge.v1.p1 * edge.v2.p0))
         # i=0, j=1
-        weight += edge.p00*math.log2(edge.p01/(edge.v1.p0 * edge.v2.p1))
+        weight += edge.p01*math.log2(edge.p01/(edge.v1.p0 * edge.v2.p1))
         # i=1, j=1
         weight += edge.p11*math.log2(edge.p11/(edge.v1.p1 * edge.v2.p1))
 
