@@ -128,6 +128,8 @@ def dependence_tree_estimator(test_data):
     current_node = root
     build_tree(current_node, graph_es)
 
+    for v in graph_vs:
+        print(v.fid, v.parent)
     return graph_vs
 
 
