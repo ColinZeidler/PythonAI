@@ -27,10 +27,10 @@ class Vertex(object):
         return self.fid
 
     def __str__(self):
-        my_str = str(self.fid) + "->[ " + str(self.p0) + ", " + str(self.p1) + "]"
-        # for x in self.children:
-        #     my_str += str(x) + ","
-        # my_str += "] "
+        my_str = str(self.fid) + "->[ " # + str(self.p0) + ", " + str(self.p1) + "]"
+        for x in self.children:
+            my_str += str(x) + ","
+        my_str += "] "
         return my_str
 
 
@@ -105,17 +105,11 @@ def dependence_tree_estimator(test_data):
 
     # tree time!
     graph_vs = set()
-    graph_es = []
     for edge in edges:
         if edge.v1 in graph_vs and edge.v2 in graph_vs:
             continue
         graph_vs.add(edge.v1)
         graph_vs.add(edge.v2)
-
-        graph_es.append(edge)
-
-    # for e in graph_es:
-    #     print(e)
 
     # select root node
     root = None
@@ -126,26 +120,34 @@ def dependence_tree_estimator(test_data):
 
     # recursivly assemble tree
     current_node = root
-    build_tree(current_node, graph_es)
+    build_tree(current_node, edges, graph_vs)
+    print(current_node)
 
     return graph_vs
 
 
-def build_tree(current_node, list_of_edges):
-    current_node.p0 = None
-    current_node.p1 = None
-    edge_list = list_of_edges[:]
-    for edge in list_of_edges:
-        if edge.v1 is current_node:
-            current_node.children.append(edge.v2)
-            edge.v2.parent = current_node
-            edge_list.remove(edge)
-        elif edge.v2 is current_node:
-            current_node.children.append(edge.v1)
-            edge.v1.parent = current_node
-            edge_list.remove(edge)
-    for child in current_node.children:
-        build_tree(child, edge_list)
+def build_tree(starting_node, list_of_edges, list_of_vertexs):
+    # current_node.p0 = None
+    # current_node.p1 = None
+    list_of_edges = sorted(list_of_edges[:], key=lambda x: x.weight, reverse=True)
+    vertex_list = list_of_vertexs
+    vertex_list.remove(starting_node)
+    connected_vertexs = set()
+    connected_vertexs.add(starting_node)
+    while len(vertex_list) > 0:
+        for edge in list_of_edges:
+            if edge.v1 in connected_vertexs and edge.v2 in connected_vertexs:
+                continue
+            if edge.v1 in connected_vertexs:
+                edge.v1.children.append(edge.v2)
+                edge.v2.parent = edge.v1
+                connected_vertexs.add(edge.v2)
+                vertex_list.remove(edge.v2)
+            elif edge.v2 in connected_vertexs:
+                edge.v2.children.append(edge.v1)
+                edge.v1.parent = edge.v2
+                connected_vertexs.add(edge.v1)
+                vertex_list.remove(edge.v1)
 
 
 def bayesian_dependent_trainer(tree, training_data):
