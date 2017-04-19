@@ -46,6 +46,7 @@ def score_point(board, x, y):
     else:
         return 0
 
+
 class PacMan(Player):
     def __init__(self, x, y):
         super().__init__()
@@ -107,16 +108,14 @@ class PacMan(Player):
             dist = DIST_CUTOFF + dist
             h_score += dist
             return h_score
-        # generate new moves
-        moves = get_valid_moves(board, move[0], move[1])
-        shuffle(moves)
-        for new_move in moves:
-            new_state = update_board(board, move, new_move, BLANK, self.symbol)
-            points_collected += score_point(new_state, new_move[0], new_move[1])
-            score = self.max_value(new_state, new_move, alpha, beta, depth+1, points_collected, game)
-            beta = min(score, beta)
-            if beta <= alpha:
-                return beta
+        new_state = board
+        for ghost in game.ghosts:
+            new_state = update_board(new_state, (ghost.x, ghost.y), ghost.calculate_move(game), BLANK, ghost.symbol)
+
+        score = self.max_value(new_state, move, alpha, beta, depth+1, points_collected, game)
+        beta = min(score, beta)
+        if beta <= alpha:
+            return beta
         return beta
 
 
